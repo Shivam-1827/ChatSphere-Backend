@@ -9,17 +9,14 @@ const dotenv_1 = __importDefault(require("dotenv"));
 const express_1 = __importDefault(require("express"));
 const cors_1 = __importDefault(require("cors"));
 dotenv_1.default.config();
-// Use Render's PORT environment variable or fallback to other options
-const expressPort = process.env.PORT || process.env.EXPRESS_PORT || 3000;
+const expressPort = process.env.WEB_SOCKET_PORT || process.env.EXPRESS_PORT || 3000;
 const API_KEY = process.env.OPENAI_API_KEY;
 const app = (0, express_1.default)();
 app.use(express_1.default.json());
 app.use((0, cors_1.default)());
-// Create HTTP server first
 const server = app.listen(expressPort, () => {
     console.log(`App is running at port: ${expressPort}`);
 });
-// Attach WebSocket server to HTTP server
 const wss = new ws_1.WebSocketServer({ server });
 let allMessages = "";
 let allSockets = [];
@@ -113,8 +110,4 @@ app.get("/summarize", async (req, res) => {
         console.error(err);
         res.status(500).json({ message: "Internal server error!" });
     });
-});
-// Add a basic root route for health checks
-app.get("/", (req, res) => {
-    res.send("Server is running!");
 });

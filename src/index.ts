@@ -6,18 +6,20 @@ import { Request, Response } from "express";
 import cors from "cors";
 
 dotenv.config();
-const expressPort = process.env.WEB_SOCKET_PORT || process.env.EXPRESS_PORT || 3000;
+// Use Render's PORT environment variable or fallback to other options
+const expressPort = process.env.PORT || process.env.EXPRESS_PORT || 3000;
 const API_KEY = process.env.OPENAI_API_KEY;
 
 const app = express();
 app.use(express.json());
 app.use(cors());
 
-
+// Create HTTP server first
 const server = app.listen(expressPort, () => {
     console.log(`App is running at port: ${expressPort}`);
 });
 
+// Attach WebSocket server to HTTP server
 const wss = new WebSocketServer({ server });
 
 let allMessages: string = "";
@@ -109,11 +111,8 @@ wss.on("connection", (socket) => {
     });
 });
 
-
-
 async function summarize(req: Request, res: Response) {
     try {
-
         const prompt = `Summarize important things from the following conversation :\n\n${allMessages}`;
 
         const geminiUrl = `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash:generateContent?key=${API_KEY}`;
@@ -142,3 +141,7 @@ app.get("/summarize", async (req: Request, res: Response) => {
     });
 });
 
+// Add a basic root route for health checks
+app.get("/", (req: Request, res: Response) => {
+    res.send("Server is running!");
+});
