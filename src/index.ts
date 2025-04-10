@@ -6,10 +6,19 @@ import { Request, Response } from "express";
 import cors from "cors";
 
 dotenv.config();
-const port = process.env.WEB_SOCKET_PORT || 8080;
-const expressPort = process.env.EXPRESS_PORT || 3000;
+const expressPort = process.env.WEB_SOCKET_PORT || process.env.EXPRESS_PORT || 3000;
 const API_KEY = process.env.OPENAI_API_KEY;
-const wss = new WebSocketServer({ port: port as number });
+
+const app = express();
+app.use(express.json());
+app.use(cors());
+
+
+const server = app.listen(expressPort, () => {
+    console.log(`App is running at port: ${expressPort}`);
+});
+
+const wss = new WebSocketServer({ server });
 
 let allMessages: string = "";
 
@@ -102,13 +111,6 @@ wss.on("connection", (socket) => {
 
 
 
-console.log("WebSocket server running on port 8080");
-
-
-const app = express();
-app.use(express.json());
-app.use(cors());
-
 async function summarize(req: Request, res: Response) {
     try {
 
@@ -140,6 +142,3 @@ app.get("/summarize", async (req: Request, res: Response) => {
     });
 });
 
-app.listen(expressPort, () => {
-    console.log(`App is running at port : ${expressPort}`);
-})
